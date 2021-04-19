@@ -36,7 +36,7 @@ class Alert implements Output
         $response->headers->remove('Content-Length');
     }
 
-    protected function getOutputContent(Collection $detectedQueries)
+    protected function getOutputContentOld(Collection $detectedQueries)
     {
         $output = '<script type="text/javascript">';
         $output .= "alert('Found the following N+1 queries in this request:\\n\\n";
@@ -50,4 +50,21 @@ class Alert implements Output
 
         return $output;
     }
+
+    protected function getOutputContent(Collection $detectedQueries)
+    {
+        $output = '<script type="text/javascript">';
+        $output .= "Swal.fire({title:'Found the following N+1 queries in this request:',html:'";
+        foreach ($detectedQueries as $detectedQuery) {
+            $output .= "Model: ".addslashes($detectedQuery['model'])." => Relation: ".addslashes($detectedQuery['relation']);
+            $output .= " - You should add \"with(\'".addslashes($detectedQuery['relation']).
+            "\')\" to eager-load this relation. in Line (".$detectedQuery['sources'][0]->line.") file name: ". addslashes( $detectedQuery['sources'][0]->name) ?? $detectedQuery['sources'][0]->name;
+            $output .= " <br><br>";
+        }
+        $output .= "',width:800})";
+        $output .= '</script>';
+
+        return $output;
+    }
+
 }
